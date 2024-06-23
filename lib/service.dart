@@ -43,9 +43,9 @@ Future<String> getVideoUrl(String reelUrl) async {
 
     final videoUrl = data['items'][0]['video_versions'][0]['url'];
 
-    http.Response r = await http.head(Uri.parse(videoUrl));
+    // http.Response r = await http.head(Uri.parse(videoUrl));
 
-    print('remote size: ${r.headers['content-length']}');
+    // print('remote size: ${r.headers['content-length']}');
 
     return videoUrl;
   }
@@ -54,6 +54,10 @@ Future<String> getVideoUrl(String reelUrl) async {
 }
 
 Future<String> downloadVideo(String videoUrl) async {
+  if (videoUrl.isEmpty) {
+    return '';
+  }
+
   final tmpDir = (await getTemporaryDirectory()).path;
   const filename = 'video.mp4';
   final localVideoPath = '$tmpDir/$filename';
@@ -63,12 +67,16 @@ Future<String> downloadVideo(String videoUrl) async {
     localVideoPath,
   );
 
-  print('local size: ${await File(localVideoPath).length()}');
+  // print('local size: ${await File(localVideoPath).length()}');
 
   return localVideoPath;
 }
 
 Future<String> convertVideo(String videoPath) async {
+  if (videoPath.isEmpty) {
+    return '';
+  }
+
   final outputPath = '${(await getTemporaryDirectory()).path}/output.mp4';
   final session = await FFmpegKit.execute(
     '-i $videoPath -vcodec libx264 -y $outputPath',
@@ -76,12 +84,16 @@ Future<String> convertVideo(String videoPath) async {
 
   // print(session.getFailStackTrace());
 
-  print('converted size: ${await File(outputPath).length()}');
+  // print('converted size: ${await File(outputPath).length()}');
 
   return outputPath;
 }
 
 Future<String> uploadLocalVideo(String videoPath) async {
+  if (videoPath.isEmpty) {
+    return '';
+  }
+
   final formData = FormData.fromMap({
     'file': await MultipartFile.fromFile(videoPath),
   });
@@ -100,7 +112,11 @@ Future<String> uploadLocalVideo(String videoPath) async {
   return '';
 }
 
-Future<void> uploadReel(String videoUrl) async {
+Future<bool> uploadReel(String videoUrl) async {
+  if (videoUrl.isEmpty) {
+    return false;
+  }
+
   const accId = '17841466974302858';
   const caption =
       'No+problem%21+Here%E2%80%99s+the+information+about+the+Mercedes+CLR+GTR%3A%0D%0AThe+Mercedes+CLR+GTR+is+a+remarkable+racing+car+celebrated+for+its+outstanding+performance+and+sleek+design.+Powered+by+a+potent+6.0-liter+V12+engine%2C+it+delivers+over+600+horsepower.%0D%0AAcceleration+from+0+to+100+km%2Fh+takes+approximately+3.7+seconds%2C+with+a+remarkable+top+speed+surprising%0D%0A320+km%2Fh.+%F0%9F%A5%87+%0D%0A%0D%0AIncorporating+adventure+aerodynamic+features+and+cutting-edge+stability+technologies%2C+the+CLR+GTR+ensures+exceptional+stability+and+control%2C+particularly+during+high-speed+maneuvers.%F0%9F%92%A8%0D%0A%0D%0AOriginally+priced+at+around+%241.5+million%2C+the+Mercedes+CLR+GTR+is+considered+one+of+the+most+exclusive+and+prestigious+racing+cars+ever+produced.%F0%9F%92%B0+%0D%0A%0D%0AIts+limited+production+run+of+just+five+units+adds+to+its+rarity%2C+making+it+highly+sought+after+by+racing+enthusiasts+and+collectors+worldwide.+%F0%9F%8C%8E%0D%0A%0D%0A%23brainrot+%23memes+';
@@ -122,17 +138,19 @@ Future<void> uploadReel(String videoUrl) async {
     while (true) {
       final result = await http.post(Uri.parse(publishUrl));
 
-      if (result.statusCode == 200) {
+      if (result.statusCode != 200 || result.statusCode != 400) {
         break;
       }
 
       Map<String, dynamic> data = json.decode(result.body);
 
       if (data.containsKey('id')) {
-        break;
+        return true;
       } else {
-        await Future.delayed(const Duration(seconds: 5));
+        await Future.delayed(const Duration(seconds: 3));
       }
     }
   }
+
+  return false;
 }

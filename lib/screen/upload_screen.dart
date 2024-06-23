@@ -15,22 +15,83 @@ class UploadScreen extends StatefulWidget {
 class _UploadScreenState extends State<UploadScreen> {
   final TextEditingController _textController = TextEditingController();
   VideoPlayerController? _videoController;
+  String statusText = '';
+  Color statusColor = Colors.black;
+
+  void _updateStatusColor(bool success) {
+    setState(() {
+      statusColor = success ? Colors.green.shade900 : Colors.red.shade900;
+    });
+  }
+
+  void _updateStatusText(String text) {
+    setState(() {
+      statusText = text;
+    });
+  }
 
   void _findReel() async {
-    String videoUrl = await getVideoUrl(_textController.text);
-    String localVideoPath = await downloadVideo(videoUrl);
-    String convertedVideoPath = await convertVideo(localVideoPath);
-    String uploadedUrl = await uploadLocalVideo(convertedVideoPath);
-    await uploadReel(uploadedUrl);
+    _updateStatusColor(true);
 
-    print(uploadedUrl);
+    setState(() {
+      _updateStatusText('Finding reel...');
+    });
+    String videoUrl = await getVideoUrl(_textController.text);
+
+    if (videoUrl.isEmpty) {
+      _updateStatusColor(false);
+      return;
+    }
+    setState(() {
+      _updateStatusText('Downloading video...');
+    });
+    String localVideoPath = await downloadVideo(videoUrl);
+
+    if (localVideoPath.isEmpty) {
+      _updateStatusColor(false);
+      return;
+    }
+    setState(() {
+      _updateStatusText('Converting video...');
+    });
+    String convertedVideoPath = await convertVideo(localVideoPath);
+
+    if (convertedVideoPath.isEmpty) {
+      _updateStatusColor(false);
+      return;
+    }
 
     _videoController = VideoPlayerController.file(File(convertedVideoPath));
     await _videoController!.initialize();
 
     setState(() {});
 
+    _videoController!.setLooping(true);
     _videoController!.play();
+
+    setState(() {
+      _updateStatusText('Uploading video...');
+    });
+    String uploadedUrl = await uploadLocalVideo(convertedVideoPath);
+
+    if (uploadedUrl.isEmpty) {
+      _updateStatusColor(false);
+      return;
+    }
+    setState(() {
+      _updateStatusText('Publishing reel...');
+    });
+    bool success = await uploadReel(uploadedUrl);
+
+    if (success) {
+      setState(() {
+        _updateStatusText('Reel published!');
+      });
+    } else {
+      _updateStatusColor(false);
+    }
+
+    _textController.clear();
   }
 
   @override
@@ -48,6 +109,12 @@ class _UploadScreenState extends State<UploadScreen> {
             onPressed: _findReel,
             child: const Text('Upload'),
           ),
+          const SizedBox(height: 16.0),
+          Text(
+            statusText,
+            style: TextStyle(color: statusColor),
+          ),
+          const SizedBox(height: 16.0),
           _videoController != null && _videoController!.value.isInitialized
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 64.0),
