@@ -138,7 +138,7 @@ Future<bool> uploadReel(String videoUrl) async {
     while (true) {
       final result = await http.post(Uri.parse(publishUrl));
 
-      if (result.statusCode != 200 || result.statusCode != 400) {
+      if (result.statusCode != 200 && result.statusCode != 400) {
         break;
       }
 
