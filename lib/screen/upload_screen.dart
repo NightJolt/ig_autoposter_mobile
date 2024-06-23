@@ -87,11 +87,11 @@ class _UploadScreenState extends State<UploadScreen> {
       setState(() {
         _updateStatusText('Reel published!');
       });
+
+      _textController.clear();
     } else {
       _updateStatusColor(false);
     }
-
-    _textController.clear();
   }
 
   @override
