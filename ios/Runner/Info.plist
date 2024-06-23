@@ -7,6 +7,9 @@
       <key>NSAllowsArbitraryLoads</key>
       <true/>
     </dict>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
