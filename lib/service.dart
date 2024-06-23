@@ -136,6 +136,8 @@ Future<bool> uploadReel(String videoUrl) async {
         '$apiUrl/$accId/media_publish?creation_id=$mediaId&access_token=$accessToken';
 
     while (true) {
+      await Future.delayed(const Duration(seconds: 3));
+
       final result = await http.post(Uri.parse(publishUrl));
 
       if (result.statusCode != 200 && result.statusCode != 400) {
@@ -146,8 +148,6 @@ Future<bool> uploadReel(String videoUrl) async {
 
       if (data.containsKey('id')) {
         return true;
-      } else {
-        await Future.delayed(const Duration(seconds: 3));
       }
     }
   }
