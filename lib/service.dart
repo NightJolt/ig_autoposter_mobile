@@ -16,8 +16,22 @@ void initService() async {
   dir.create();
 }
 
+String formatReelUrl(String url) {
+  String formattedUrl = url;
+
+  if (formattedUrl.contains('?')) {
+    formattedUrl = url.split('?')[0];
+  }
+
+  if (formattedUrl.endsWith('/')) {
+    formattedUrl = formattedUrl.substring(0, formattedUrl.length - 1);
+  }
+
+  return formattedUrl;
+}
+
 Future<String> getVideoUrl(String reelUrl) async {
-  final requestUrl = '$reelUrl/?__a=1&__d=dis';
+  final requestUrl = '${formatReelUrl(reelUrl)}/?__a=1&__d=dis';
 
   final response = await http.get(Uri.parse(requestUrl), headers: {
     'Cookie':
@@ -31,12 +45,12 @@ Future<String> getVideoUrl(String reelUrl) async {
 
     http.Response r = await http.head(Uri.parse(videoUrl));
 
-    print("remote size: ${r.headers["content-length"]}");
+    print('remote size: ${r.headers['content-length']}');
 
     return videoUrl;
   }
 
-  return "";
+  return '';
 }
 
 Future<String> downloadVideo(String videoUrl) async {
@@ -49,7 +63,7 @@ Future<String> downloadVideo(String videoUrl) async {
     localVideoPath,
   );
 
-  print("local size: ${await File(localVideoPath).length()}");
+  print('local size: ${await File(localVideoPath).length()}');
 
   return localVideoPath;
 }
@@ -62,7 +76,7 @@ Future<String> convertVideo(String videoPath) async {
 
   // print(session.getFailStackTrace());
 
-  print("converted size: ${await File(outputPath).length()}");
+  print('converted size: ${await File(outputPath).length()}');
 
   return outputPath;
 }
@@ -83,7 +97,7 @@ Future<String> uploadLocalVideo(String videoPath) async {
     return uploadedUrl;
   }
 
-  return "";
+  return '';
 }
 
 Future<void> uploadReel(String videoUrl) async {
@@ -94,7 +108,7 @@ Future<void> uploadReel(String videoUrl) async {
       'EAAG5ZC4BORDwBO1TMbDlyJGIbnhroteFF1FykylOtd6VqgZAUPxUn9sWxNwRQ2Q4xEPJAEzh9v4Fnp4JOXRed0lEaC53W5dqdHbaBnHiN0a609q3h3gZCOVqTBUhaF8arLMSgatiJKeSufjgbUYWTustVP8pr547tOZCcSVPYA2P4EKDMdIiQ2lr';
   const apiUrl = 'https://graph.facebook.com/v20.0';
   final requestUrl =
-      "$apiUrl/$accId/media?media_type=REELS&video_url=$videoUrl&caption=$caption&access_token=$accessToken";
+      '$apiUrl/$accId/media?media_type=REELS&video_url=$videoUrl&caption=$caption&access_token=$accessToken';
 
   final response = await http.post(Uri.parse(requestUrl));
 
@@ -103,7 +117,7 @@ Future<void> uploadReel(String videoUrl) async {
 
     final mediaId = data['id'];
     final publishUrl =
-        "$apiUrl/$accId/media_publish?creation_id=$mediaId&access_token=$accessToken";
+        '$apiUrl/$accId/media_publish?creation_id=$mediaId&access_token=$accessToken';
 
     while (true) {
       final result = await http.post(Uri.parse(publishUrl));

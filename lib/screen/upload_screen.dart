@@ -17,8 +17,7 @@ class _UploadScreenState extends State<UploadScreen> {
   VideoPlayerController? _videoController;
 
   void _findReel() async {
-    String videoUrl =
-        await getVideoUrl("https://www.instagram.com/p/C7yTbG5MnwY");
+    String videoUrl = await getVideoUrl(_textController.text);
     String localVideoPath = await downloadVideo(videoUrl);
     String convertedVideoPath = await convertVideo(localVideoPath);
     String uploadedUrl = await uploadLocalVideo(convertedVideoPath);
